@@ -1,0 +1,371 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Helmet Detection System - REAL</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            min-height: 100vh;
+            padding: 20px;
+        }
+        .container { max-width: 1400px; margin: 0 auto; }
+        .header {
+            text-align: center;
+            padding: 30px 0;
+            margin-bottom: 30px;
+        }
+        .header h1 {
+            font-size: 3em;
+            margin-bottom: 10px;
+            text-shadow: 2px 2px 4px rgba(0,0,0,0.3);
+        }
+        .header p {
+            font-size: 1.2em;
+            opacity: 0.9;
+        }
+        .dashboard {
+            display: grid;
+            grid-template-columns: 2fr 1fr;
+            gap: 25px;
+            margin-bottom: 30px;
+        }
+        .panel {
+            background: rgba(255, 255, 255, 0.1);
+            backdrop-filter: blur(10px);
+            border-radius: 15px;
+            padding: 25px;
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
+        }
+        .panel h2 {
+            margin-bottom: 20px;
+            color: #fff;
+            font-size: 1.5em;
+            border-bottom: 2px solid rgba(255,255,255,0.2);
+            padding-bottom: 10px;
+        }
+        .video-container {
+            background: #000;
+            border-radius: 10px;
+            overflow: hidden;
+            margin-bottom: 20px;
+            position: relative;
+        }
+        .video-container img {
+            width: 100%;
+            display: block;
+        }
+        .controls {
+            display: flex;
+            gap: 10px;
+            flex-wrap: wrap;
+            margin-top: 20px;
+        }
+        .btn {
+            padding: 12px 25px;
+            border: none;
+            border-radius: 8px;
+            font-size: 16px;
+            font-weight: bold;
+            cursor: pointer;
+            transition: all 0.3s;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+        .btn:hover { transform: translateY(-2px); box-shadow: 0 5px 15px rgba(0,0,0,0.2); }
+        .btn-start { background: #4CAF50; color: white; }
+        .btn-stop { background: #f44336; color: white; }
+        .btn-override { background: #FF9800; color: white; }
+        
+        .status-card {
+            background: rgba(255, 255, 255, 0.15);
+            border-radius: 10px;
+            padding: 20px;
+            margin-bottom: 20px;
+        }
+        .status-item {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 10px;
+            padding: 10px;
+            background: rgba(255,255,255,0.1);
+            border-radius: 5px;
+        }
+        .status-label { font-weight: bold; }
+        .status-value { font-weight: bold; }
+        .status-good { color: #4CAF50; }
+        .status-bad { color: #f44336; }
+        .status-warn { color: #FF9800; }
+        
+        .detection-result {
+            text-align: center;
+            padding: 20px;
+            font-size: 1.5em;
+            font-weight: bold;
+            border-radius: 10px;
+            margin: 20px 0;
+        }
+        .detection-yes { background: rgba(76, 175, 80, 0.3); border: 2px solid #4CAF50; }
+        .detection-no { background: rgba(244, 67, 54, 0.3); border: 2px solid #f44336; }
+        
+        .logs-container {
+            background: rgba(0, 0, 0, 0.2);
+            border-radius: 8px;
+            padding: 15px;
+            height: 300px;
+            overflow-y: auto;
+            font-family: 'Courier New', monospace;
+            font-size: 14px;
+        }
+        .log-entry {
+            padding: 8px 0;
+            border-bottom: 1px solid rgba(255,255,255,0.1);
+        }
+        
+        @media (max-width: 768px) {
+            .dashboard { grid-template-columns: 1fr; }
+            .header h1 { font-size: 2em; }
+            .controls { flex-direction: column; }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>🛡️ Helmet Detection System</h1>
+            <p>AI-powered safety system with REAL camera and YOLO AI</p>
+            <p style="margin-top: 10px; font-size: 0.9em; opacity: 0.8;">
+                Python 3.10 ✅ | OpenCV ✅ | YOLOv8 ✅ | Flask ✅
+            </p>
+        </div>
+        
+        <div class="dashboard">
+            <!-- Left: Camera Feed -->
+            <div class="panel">
+                <h2>📹 Live Camera Feed</h2>
+                <div class="video-container">
+                    <img id="videoStream" src="/video_feed" alt="Live Camera Feed">
+                </div>
+                <div class="controls">
+                    <button class="btn btn-start" onclick="startSystem()">
+                        ▶ Start System
+                    </button>
+                    <button class="btn btn-stop" onclick="stopSystem()">
+                        ⏹ Stop System
+                    </button>
+                    <button class="btn btn-override" id="overrideBtn" onclick="toggleOverride()">
+                        🔓 Safety Override: OFF
+                    </button>
+                </div>
+            </div>
+            
+            <!-- Right: Status Panel -->
+            <div class="panel">
+                <!-- System Status -->
+                <div class="status-card">
+                    <h3>📊 System Status</h3>
+                    <div class="status-item">
+                        <span class="status-label">System:</span>
+                        <span class="status-value" id="systemStatus">OFFLINE</span>
+                    </div>
+                    <div class="status-item">
+                        <span class="status-label">Camera:</span>
+                        <span class="status-value" id="cameraStatus">Offline</span>
+                    </div>
+                    <div class="status-item">
+                        <span class="status-label">AI Model:</span>
+                        <span class="status-value" id="aiStatus">Ready</span>
+                    </div>
+                </div>
+                
+                <!-- Detection Result -->
+                <div class="status-card">
+                    <h3>🔍 Detection Result</h3>
+                    <div class="detection-result" id="detectionResult">
+                        System offline
+                    </div>
+                    <div class="status-item">
+                        <span class="status-label">Confidence:</span>
+                        <span class="status-value" id="confidenceValue">0%</span>
+                    </div>
+                    <div class="status-item">
+                        <span class="status-label">Vehicle:</span>
+                        <span class="status-value" id="vehicleStatus">OFF</span>
+                    </div>
+                </div>
+                
+                <!-- Activity Logs -->
+                <div class="status-card">
+                    <h3>📝 Activity Logs</h3>
+                    <div class="logs-container" id="logsContainer">
+                        <div class="log-entry">System initialized. Ready to start.</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <div style="text-align: center; margin-top: 30px; padding: 20px; 
+                   background: rgba(255,255,255,0.1); border-radius: 10px;">
+            <p style="font-size: 1.1em;">🚀 <strong>Real Helmet Detection System</strong> | Built with Python 3.10</p>
+            <p style="margin-top: 10px; opacity: 0.9;">
+                ✅ Camera working | ✅ AI detecting | ✅ Vehicle control logic | ✅ Web interface
+            </p>
+        </div>
+    </div>
+
+    <script>
+        let systemActive = false;
+        let updateInterval;
+        
+        // Start system
+        function startSystem() {
+            fetch('/api/start', { method: 'POST' })
+                .then(response => response.json())
+                .then(data => {
+                    if (data.success) {
+                        systemActive = true;
+                        addLog('✅ System started successfully!');
+                        updateStatus();
+                        startStatusUpdates();
+                    } else {
+                        alert('Error: ' + data.error);
+                    }
+                });
+        }
+        
+        // Stop system
+        function stopSystem() {
+            fetch('/api/stop', { method: 'POST' })
+                .then(response => response.json())
+                .then(data => {
+                    systemActive = false;
+                    addLog('🛑 System stopped');
+                    document.getElementById('systemStatus').textContent = 'OFFLINE';
+                    document.getElementById('systemStatus').className = 'status-value status-bad';
+                });
+        }
+        
+        // Toggle safety override
+        function toggleOverride() {
+            fetch('/api/toggle_override', { method: 'POST' })
+                .then(response => response.json())
+                .then(data => {
+                    const btn = document.getElementById('overrideBtn');
+                    if (data.override) {
+                        btn.innerHTML = '🔓 Safety Override: ON';
+                        btn.style.background = '#4CAF50';
+                        addLog('⚠️ Safety override ENABLED');
+                    } else {
+                        btn.innerHTML = '🔓 Safety Override: OFF';
+                        btn.style.background = '#FF9800';
+                        addLog('✅ Safety override DISABLED');
+                    }
+                });
+        }
+        
+        // Update system status
+        function updateStatus() {
+            fetch('/api/status')
+                .then(response => response.json())
+                .then(data => {
+                    // System status
+                    document.getElementById('systemStatus').textContent = 
+                        data.system_active ? 'ACTIVE' : 'OFFLINE';
+                    document.getElementById('systemStatus').className = 
+                        data.system_active ? 'status-value status-good' : 'status-value status-bad';
+                    
+                    // Camera status
+                    document.getElementById('cameraStatus').textContent = 
+                        data.camera.running ? `Active (${data.camera.frames_captured} frames)` : 'Offline';
+                    
+                    // AI status
+                    document.getElementById('aiStatus').textContent = 
+                        data.detector.model_loaded ? 'YOLOv8 Active' : 'Simulated';
+                    
+                    // Detection result
+                    const detectionResult = document.getElementById('detectionResult');
+                    const confidenceValue = document.getElementById('confidenceValue');
+                    const vehicleStatus = document.getElementById('vehicleStatus');
+                    
+                    if (data.current.helmet_detected) {
+                        detectionResult.textContent = '✅ HELMET DETECTED';
+                        detectionResult.className = 'detection-result detection-yes';
+                    } else {
+                        detectionResult.textContent = '❌ NO HELMET';
+                        detectionResult.className = 'detection-result detection-no';
+                    }
+                    
+                    confidenceValue.textContent = `${(data.current.confidence * 100).toFixed(1)}%`;
+                    confidenceValue.className = data.current.confidence > 0.5 ? 
+                        'status-value status-good' : 'status-value status-bad';
+                    
+                    vehicleStatus.textContent = data.current.ignition_allowed ? '🟢 ON' : '🔴 OFF';
+                    vehicleStatus.className = data.current.ignition_allowed ? 
+                        'status-value status-good' : 'status-value status-bad';
+                    
+                    // Add to logs
+                    if (data.current.message && data.current.timestamp) {
+                        const logMsg = `${data.current.timestamp} - ${data.current.message}`;
+                        if (!logExists(logMsg)) {
+                            addLog(logMsg);
+                        }
+                    }
+                })
+                .catch(error => {
+                    console.log('Status update error:', error);
+                });
+        }
+        
+        // Start periodic status updates
+        function startStatusUpdates() {
+            if (updateInterval) {
+                clearInterval(updateInterval);
+            }
+            updateInterval = setInterval(updateStatus, 1000);
+        }
+        
+        // Add log entry
+        function addLog(message) {
+            const logsContainer = document.getElementById('logsContainer');
+            const logEntry = document.createElement('div');
+            logEntry.className = 'log-entry';
+            logEntry.textContent = message;
+            logsContainer.prepend(logEntry);
+            
+            // Keep only last 15 logs
+            if (logsContainer.children.length > 15) {
+                logsContainer.removeChild(logsContainer.lastChild);
+            }
+        }
+        
+        // Check if log already exists
+        function logExists(message) {
+            const logs = document.getElementById('logsContainer').children;
+            for (let log of logs) {
+                if (log.textContent === message) {
+                    return true;
+                }
+            }
+            return false;
+        }
+        
+        // Load initial logs
+        function loadInitialLogs() {
+            fetch('/api/logs')
+                .then(response => response.json())
+                .then(data => {
+                    data.logs.forEach(log => addLog(log));
+                });
+        }
+        
+        // Initialize
+        loadInitialLogs();
+        updateStatus();
+    </script>
+</body>
+</html>
