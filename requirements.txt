@@ -1,0 +1,104 @@
+# ==============================================
+# HELMET DETECTION SYSTEM - DEPENDENCIES
+# ==============================================
+# Version: 1.0.0
+# Project: Real-time helmet detection using YOLOv8
+# ==============================================
+
+# ========================
+# CORE FRAMEWORKS
+# ========================
+
+# Web Framework for Dashboard
+flask==2.3.3
+Werkzeug==2.3.7
+Jinja2==3.1.2
+itsdangerous==2.1.2
+click==8.1.3
+
+# Computer Vision & Image Processing
+opencv-python==4.8.1.78
+opencv-contrib-python==4.8.1.78  # Extended OpenCV features
+
+# Object Detection (YOLOv8)
+ultralytics==8.0.196
+torch==2.0.1
+torchvision==0.15.2
+
+# ========================
+# DATA PROCESSING
+# ========================
+
+# Data Manipulation & Analysis
+pandas==2.0.3
+numpy==1.24.3
+
+# Image Manipulation
+Pillow==10.0.0
+
+# ========================
+# UTILITIES & HELPERS
+# ========================
+
+# HTTP Requests (for API calls if needed)
+requests==2.31.0
+
+# Logging & Debugging
+loguru==0.7.2
+
+# Configuration Management
+python-dotenv==1.0.0
+
+# Date/Time Handling
+python-dateutil==2.8.2
+
+# ========================
+# OPTIONAL (For Enhanced Features)
+# ========================
+
+# Database Support (if adding database later)
+# SQLAlchemy==2.0.19
+# psycopg2-binary==2.9.7  # PostgreSQL
+# pymongo==4.4.1  # MongoDB
+
+# Email/SMS Alerts
+# twilio==8.2.0  # For SMS notifications
+# secure-smtplib==0.1.1  # For email
+
+# Real-time Web Updates
+# flask-socketio==5.3.4
+
+# API Documentation
+# flasgger==0.9.7.1  # Swagger UI for Flask
+
+# ========================
+# DEVELOPMENT & TESTING
+# ========================
+
+# Testing Framework
+pytest==7.4.2
+pytest-flask==1.2.0
+
+# Code Quality
+flake8==6.1.0
+black==23.7.0
+isort==5.12.0
+
+# Type Checking (Optional)
+mypy==1.5.1
+types-requests==2.31.0.1
+
+# ========================
+# VERSION NOTES
+# ========================
+# Python Version Required: 3.8 or higher
+# Tested on: Python 3.8, 3.9, 3.10, 3.11
+# 
+# Minimum System Requirements:
+# - RAM: 4GB (8GB recommended)
+# - Disk: 2GB free space
+# - Webcam or video source required
+#
+# For GPU Acceleration (Optional):
+# torch==2.0.1+cu118 (CUDA 11.8)
+# Requires NVIDIA GPU with CUDA support
