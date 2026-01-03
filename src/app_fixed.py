@@ -231,16 +231,19 @@ def detect():
     
     try:
         frame = camera.get_frame()
-        helmet_detected, confidence, timestamp = detector.detect(frame)
-        ignition_allowed, message = controller.check_and_control(helmet_detected, confidence)
+        is_safe, confidence, timestamp = detector.detect(frame)
+        ignition_allowed, message = controller.check_and_control(is_safe, confidence)
+        # Pass is_safe to controller (it expects safety status)
+        
         
         return jsonify({
             'success': True,
-            'helmet_detected': helmet_detected,
+            'helmet_detected': is_safe,  # ← Frontend expects this name
             'confidence': confidence,
             'ignition_allowed': ignition_allowed,
             'message': message,
-            'timestamp': timestamp
+            'timestamp': timestamp,
+            'is_safe': is_safe  # ← Add this for clarity
         })
     except Exception as e:
         return jsonify({'success': False, 'error': str(e)})

@@ -1,3 +1,4 @@
+
 """
 Vehicle Control Module
 """
@@ -26,18 +27,18 @@ class VehicleControl:
         if not os.path.exists(self.log_file):
             with open(self.log_file, 'w', newline='') as f:
                 writer = csv.writer(f)
-                writer.writerow(['timestamp', 'helmet_detected', 
+                writer.writerow(['timestamp', 'safety_status', 
                                'confidence', 'ignition_status', 'override'])
     
-    def check_and_control(self, helmet_detected, confidence):
-        """Make control decision"""
+    def check_and_control(self, is_safe, confidence):
+        """Make control decision based on safety status"""
         timestamp = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
         
         # Log detection
-        self._log_to_csv(timestamp, helmet_detected, confidence)
+        self._log_to_csv(timestamp, is_safe, confidence)
         
         # Add to memory logs
-        log_entry = f"{timestamp} - Helmet: {'YES' if helmet_detected else 'NO'} ({confidence:.0%})"
+        log_entry = f"{timestamp} - Safety: {'PASS' if is_safe else 'FAIL'} ({confidence:.0%})"
         self.logs.append(log_entry)
         
         # Keep only last 20 logs in memory
@@ -49,24 +50,24 @@ class VehicleControl:
             self.ignition = True
             return True, "🚨 SAFETY OVERRIDE: Vehicle allowed"
         
-        if helmet_detected and confidence > 0.5:
+        if is_safe and confidence > 0.5:
             self.ignition = True
-            return True, f"✅ ALLOWED: Helmet detected ({confidence:.0%} confidence)"
+            return True, f"✅ ALLOWED: Safety verified ({confidence:.0%} confidence)"
         else:
             self.ignition = False
-            if not helmet_detected:
-                return False, "❌ BLOCKED: No helmet detected"
+            if not is_safe:
+                return False, "❌ BLOCKED: Safety violation - No helmet detected"
             else:
                 return False, f"⚠️ BLOCKED: Low confidence ({confidence:.0%})"
     
-    def _log_to_csv(self, timestamp, helmet_detected, confidence):
+    def _log_to_csv(self, timestamp, is_safe, confidence):
         """Log to CSV file"""
         try:
             with open(self.log_file, 'a', newline='') as f:
                 writer = csv.writer(f)
                 writer.writerow([
                     timestamp,
-                    'YES' if helmet_detected else 'NO',
+                    'PASS' if is_safe else 'FAIL',
                     f"{confidence:.2f}",
                     'ON' if self.ignition else 'OFF',
                     'YES' if self.safety_override else 'NO'

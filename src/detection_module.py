@@ -56,19 +56,27 @@ class AIDetector:
                 if person_detected:
                     # Simulate: Person with helmet 70% of time
                     has_helmet = (self.detection_count % 10) < 7
+                    
+                    # ✅ SAFETY LOGIC: Person + Helmet = Safe
+                    is_safe = has_helmet  # True only if BOTH person AND helmet
                     confidence = 0.8 if has_helmet else 0.4
                 else:
+                    # ❌ NO person = NEVER safe
                     has_helmet = False
+                    is_safe = False  # No person = unsafe
                     confidence = 0.3
                 
+                # ✅ Store detection results
                 self.last_detection = {
                     'person_detected': person_detected,
                     'helmet': has_helmet,
+                    'is_safe': is_safe,  # ← Important: track safety status
                     'confidence': confidence,
                     'timestamp': time.strftime("%H:%M:%S")
                 }
                 
-                return has_helmet, confidence, time.strftime("%H:%M:%S")
+                # ✅ Return SAFETY status, not just helmet
+                return is_safe, confidence, time.strftime("%H:%M:%S")
                 
             except Exception as e:
                 print(f"⚠️ AI detection error: {e}")
@@ -78,7 +86,11 @@ class AIDetector:
         has_helmet = (self.detection_count % 10) < 7
         confidence = 0.85 if has_helmet else 0.45
         
-        return has_helmet, confidence, time.strftime("%H:%M:%S")
+        # In simulation, assume person is detected
+        # So safety = has_helmet (person + helmet)
+        is_safe = has_helmet
+        
+        return is_safe, confidence, time.strftime("%H:%M:%S")
     
     def get_status(self):
         return {
